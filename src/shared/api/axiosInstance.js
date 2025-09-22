@@ -1,17 +1,16 @@
 import axios from "axios";
 
 const BASE =
-  process.env.REACT_APP_API_BASE_URL?.trim() || "http://localhost:8080";
+  process.env.REACT_APP_API_BASE_URL?.trim() ||
+  "https://v1attendance-backend.onrender.com";  // ⬅️ use backend URL here
 
-console.log("Axios baseURL →", BASE); // temporary: confirms at runtime
+console.log("Axios baseURL →", BASE);
 
 const axiosInstance = axios.create({
   baseURL: BASE,
   headers: { "Content-Type": "application/json", Accept: "application/json" },
 });
 
-/* ⬇️ If we send FormData, drop the JSON Content-Type so the browser can set
-   multipart/form-data with the correct boundary. */
 axiosInstance.interceptors.request.use((config) => {
   try {
     if (typeof FormData !== "undefined" && config.data instanceof FormData) {

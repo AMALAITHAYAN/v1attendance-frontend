@@ -1,3 +1,4 @@
+// src/api/axiosInstance.js (teacher/admin)
 import axios from "axios";
 
 /**
@@ -5,7 +6,9 @@ import axios from "axios";
  * Attaches X-Auth-Username / X-Auth-Password from localStorage.
  */
 const axiosInstance = axios.create({
-  baseURL: process.env.REACT_APP_API_BASE_URL || "http://localhost:8080",
+  baseURL:
+    process.env.REACT_APP_API_BASE_URL?.trim() ||
+    "https://v1attendance-backend.onrender.com", // ⬅️ replace with your Render backend URL
 });
 
 // (debug) see the base URL in devtools
@@ -13,6 +16,9 @@ try {
   console.log("Axios (admin) baseURL →", axiosInstance.defaults.baseURL);
 } catch {}
 
+/**
+ * Attach teacher credentials from localStorage.
+ */
 axiosInstance.interceptors.request.use((config) => {
   try {
     // username may be stored as a plain string OR as JSON { username }
@@ -38,14 +44,18 @@ axiosInstance.interceptors.request.use((config) => {
   return config;
 });
 
-// Optional: normalize server errors -> Error(message)
+/**
+ * Normalize server errors -> always throw Error(message)
+ */
 axiosInstance.interceptors.response.use(
   (res) => res,
   (err) => {
     const message =
       err?.response?.data?.message ||
       err?.response?.data?.error ||
-      (typeof err?.response?.data === "string" ? err.response.data : "") ||
+      (typeof err?.response?.data === "string"
+        ? err.response.data
+        : "") ||
       err?.message ||
       "Request failed";
     const e = new Error(message);

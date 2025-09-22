@@ -1,11 +1,15 @@
-// src/superadmin/api/liveSseClient.js  (or keep your existing path)
-// Uses fetch + ReadableStream so we can send custom headers.
+// src/superadmin/api/liveSseClient.js
 
-import axios from "../api/axiosInstance"; // adjust path to your axiosInstance
+import axios from "../api/axiosInstance"; // path to your shared axios instance
 
 export class LiveSSEClient {
   constructor({ path, headers, onOpen, onMessage, onError, onClose }) {
-    const base = axios.defaults.baseURL || "http://localhost:8080";
+    // always rely on axiosInstance’s configured baseURL
+    const base =
+      axios.defaults.baseURL ||
+      process.env.REACT_APP_API_BASE_URL ||
+      "https://v1attendance-backend.onrender.com"; // fallback to hosted backend
+
     this.url = new URL(path, base).toString();
     this.headers = headers || {};
     this.onOpen = onOpen || (() => {});
@@ -93,7 +97,9 @@ export class LiveSSEClient {
     this.lastEventId = id || this.lastEventId;
 
     let parsed = dataStr;
-    try { parsed = JSON.parse(dataStr); } catch {}
+    try {
+      parsed = JSON.parse(dataStr);
+    } catch {}
 
     this.onMessage({ id: this.lastEventId, event, data: parsed, raw: dataStr });
   }
@@ -107,12 +113,21 @@ export class LiveSSEClient {
 
   close() {
     this.isClosing = true;
-    try { this.controller?.abort(); } catch {}
+    try {
+      this.controller?.abort();
+    } catch {}
     this.onClose({ reason: "manual" });
   }
 }
 
-export function createLiveClient({ adminUsername, adminPassword, onOpen, onMessage, onError, onClose }) {
+export function createLiveClient({
+  adminUsername,
+  adminPassword,
+  onOpen,
+  onMessage,
+  onError,
+  onClose,
+}) {
   if (!adminUsername || !adminPassword) {
     throw new Error("Admin username/password required for live SSE");
   }
@@ -122,6 +137,9 @@ export function createLiveClient({ adminUsername, adminPassword, onOpen, onMessa
       "X-Auth-Username": adminUsername,
       "X-Auth-Password": adminPassword,
     },
-    onOpen, onMessage, onError, onClose,
+    onOpen,
+    onMessage,
+    onError,
+    onClose,
   });
 }
