@@ -1,17 +1,36 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import "./index.css";
+import App from "./App";
+import reportWebVitals from "./reportWebVitals";
+import ErrorBoundary from "./ErrorBoundary";
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
+// Guard in case #root is missing (prevents silent blank page)
+const mount = document.getElementById("root");
+if (!mount) {
+  // eslint-disable-next-line no-console
+  console.error("Failed to find #root element to mount React app.");
+} else {
+  const root = ReactDOM.createRoot(mount);
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
+  const Shell = () => (
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
+  );
+
+  // In development, avoid StrictMode to prevent double-invoked effects
+  // (helps with camera streams, timers, etc.). Keep it in production.
+  if (process.env.NODE_ENV === "production") {
+    root.render(
+      <React.StrictMode>
+        <Shell />
+      </React.StrictMode>
+    );
+  } else {
+    root.render(<Shell />);
+  }
+}
+
+// Optional: performance measurements
 reportWebVitals();
