@@ -527,7 +527,6 @@ export default function MarkAttendancePage() {
   const needsWifi = flow.includes("WIFI");
   const needsGeo = flow.includes("GEO");
   const needsFace = flow.includes("FACE");
-  const needsQr = flow.includes("QR");
 
   const canContinueWifi = useMemo(() => {
     return Boolean(
